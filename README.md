@@ -17,7 +17,11 @@ linux o mac: source .myenv/bin/activate
 pip install -r requirements.txt
 ```
 
-- 🛠 **Run ETL**:
+- 🛠 **Environment Variables**:
+
+The `COLLECTOR_ID` and `LUMU_CLIENT_KEY` variables required to send the files to the LUMU api are set.
+
+- 🚀 **Run ETL**:
 
 ```
 python etl.py
