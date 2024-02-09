@@ -1,11 +1,11 @@
-import os
 import pandas as pd
 from datetime import datetime
+from dotenv import load_dotenv
 
-from src.transform import __transform_ips_rank, __transform_host_rank
-from src.load import __split_df_and_save
+from src.transform import __transform_ips_rank, __transform_host_rank, __clean_record_to_lumu_format
+from src.load import __parser_and_send_to_lumu, __print_report
 
-DATETIME_NOW = datetime.utcnow()
+load_dotenv()
 
 def extract(file = 'queries') -> pd.DataFrame:
     """
@@ -33,29 +33,28 @@ def transform(df: pd.DataFrame) -> list[pd.DataFrame, pd.DataFrame]:
     """
     total_rows = df[0].size
     print(f"Total records: {total_rows}")
-    return __transform_ips_rank(df, total_rows), __transform_host_rank(df, total_rows)
+    df_lumu_formated = __clean_record_to_lumu_format(df)
+    return __transform_ips_rank(df, total_rows), __transform_host_rank(df, total_rows), df_lumu_formated
 
-def load(df_ips_rank: pd.DataFrame, df_host_rank: pd.DataFrame) -> None:
+def load(df_ips_rank: pd.DataFrame, df_host_rank: pd.DataFrame, df: pd.DataFrame) -> None:
     """
-    Load function to create a folder with the current timestamp, and then
-    split and print the client IPs and host ranks.
+    Load function to process dataframes and send reports to Lumu.
     
     Args:
         df_ips_rank (pd.DataFrame): The dataframe of IP ranks.
         df_host_rank (pd.DataFrame): The dataframe of host ranks.
+        df: pd.DataFrame (pd.DataFrame): The dataframe that will be sen.
     
     Returns:
         None
     """
-    name_folder = str(DATETIME_NOW.timestamp())
-    os.makedirs(name_folder)
+    __parser_and_send_to_lumu(df, df.index.size)
+    
+    __print_report(df_ips_rank, 'Client IPs Rank')
+    __print_report(df_host_rank, 'Host Rank')
 
-    print('Client IPs Rank')
-    __split_df_and_save(df_ips_rank, df_ips_rank['Percentage'].size, 'Client_IPs_Rank', name_folder)
-    print('Host Rank')
-    __split_df_and_save(df_host_rank, df_host_rank['Percentage'].size, 'Host_Rank', name_folder)
 
 if __name__ == "__main__":
     df = extract()
-    df_ips_rank, df_host_rank = transform(df)
-    load(df_ips_rank, df_host_rank)
+    df_ips_rank, df_host_rank, df = transform(df)
+    load(df_ips_rank, df_host_rank, df)

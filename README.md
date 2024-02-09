@@ -9,10 +9,10 @@ Documentation for setting up and launching the ETL responsible for parsing data 
 - 📦 **init virtual environment**:
 
 ```
-python -m venv .env
+python -m venv .myenv
 
-windows: .\.env\Scripts\activate
-linux o mac: source .env/bin/activate
+windows: .\.myenv\Scripts\activate
+linux o mac: source .myenv/bin/activate
 
 pip install -r requirements.txt
 ```
